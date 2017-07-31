@@ -12,7 +12,8 @@ import evaluate
 entity_size = 14951
 relation_size = 1345
 embedding_size = 50
-
+# number of sample neg examples
+num_sample = 200
 # training
 Test_size = 5000
 Train_size = 54071
@@ -34,7 +35,7 @@ def train():
     test_data = test_data[Train_size:, :]
 
     train_data_node = tf.placeholder(tf.int32, shape=(None, 3))
-    train_neg_node = tf.placeholder(tf.int32, shape=(None, 2*(entity_size-1), 3))
+    train_neg_node = tf.placeholder(tf.int32, shape=(None, 2*num_sample, 3))
 
     test_scores_node = tf.placeholder(tf.float32, shape=(Test_size, entity_size))
     test_labels_node = tf.placeholder(tf.int32, shape=(Test_size,))
@@ -121,7 +122,7 @@ def train():
             # train process
             x_batch = numpy.squeeze(batch)
             # generate neg data
-            neg_x_batch = load_data.generate_neg_data(x_batch)
+            neg_x_batch = load_data.generate_neg_data(x_batch, num_sample=num_sample)
             feed_dict = {train_data_node: x_batch, train_neg_node: neg_x_batch}
             _,step,losses = sess.run([train_op, global_step,loss],feed_dict=feed_dict)
             time_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

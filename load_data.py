@@ -60,32 +60,63 @@ def load_train_test():
 
 
 # train_data = [batch_size,3]
-# return [batch_size,2*(entity_size-1),3]
-def generate_neg_data(train_data):
+# return [batch_size,2*(entity_size-1),3] or [batch_size,2*num_sample,3]
+def generate_neg_data(train_data, num_sample=None):
     entity_size = 14951
     n,m = train_data.shape
-    neg_train_data = numpy.zeros(shape=(n, 2*(entity_size-1), 3), dtype=numpy.int32)
-    for k in range(n):
-        example = train_data[k]
-        neg_example = numpy.zeros(shape=(2*(entity_size-1), 3), dtype=numpy.int32)
-        j = 0
-        # h
-        h_id = example[0]
-        for i in range(entity_size):
-            if i != h_id:
-                example[0] = i
+    if num_sample is None:
+        neg_train_data = numpy.zeros(shape=(n, 2*(entity_size-1), 3), dtype=numpy.int32)
+        for k in range(n):
+            example = train_data[k].copy()
+            example2 = train_data[k].copy()
+            neg_example = numpy.zeros(shape=(2*(entity_size-1), 3), dtype=numpy.int32)
+            j = 0
+            # h
+            h_id = example[0]
+            for i in range(entity_size):
+                if i != h_id:
+                    example[0] = i
+                    neg_example[j] = example
+                    j += 1
+            # t
+            t_id = example2[1]
+            for i in range(entity_size):
+                if i != t_id:
+                    example2[1] = i
+                    neg_example[j] = example2
+                    j += 1
+
+            neg_train_data[k] = neg_example
+            k += 1
+        return neg_train_data
+    else:
+        neg_train_data = numpy.zeros(shape=(n, 2*num_sample, 3), dtype=numpy.int32)
+        for k in range(n):
+            example = train_data[k].copy()
+            example2 = train_data[k].copy()
+            neg_example = numpy.zeros(shape=(2*num_sample, 3), dtype=numpy.int32)
+            # h
+            h_id = example[0]
+            t_id = example[1]
+            ids = list(range(entity_size))
+            if h_id in ids:
+                ids.remove(h_id)
+            if t_id in ids:
+                ids.remove(t_id)
+            shuffle_indices = numpy.random.permutation(numpy.asarray(ids, dtype=numpy.int32))
+            sample_ids = shuffle_indices[:num_sample].tolist()
+            j = 0
+            for item in sample_ids:
+                example[0] = item
                 neg_example[j] = example
                 j += 1
-        # t
-        example = train_data[k]
-        t_id = example[1]
-        for i in range(entity_size):
-            if i != t_id:
-                example[1] = i
-                neg_example[j] = example
+            # t
+            shuffle_2 = numpy.random.permutation(numpy.asarray(ids, dtype=numpy.int32))
+            sample_ids_2 = shuffle_2[:num_sample].tolist()
+            for item in sample_ids_2:
+                example2[1] = item
+                neg_example[j] = example2
                 j += 1
-
-        neg_train_data[k] = neg_example
-        k += 1
-    return neg_train_data
-
+            neg_train_data[k] = neg_example
+            k += 1
+        return neg_train_data
