@@ -6,27 +6,25 @@ from  multiprocessing import Pool
 
 
 def unit(h, t, r, entity_embedding):
-    entity_size = 14951
-    h_count = 0
-    t_count = 0
     k = 10
-    my_score = -np.sum((h + r - t) ** 2)
-    for j in range(entity_size):
-            # score = - distance
-            score_h = -np.sum((entity_embedding[j] + r - t) ** 2)
-            if score_h > my_score:
-                h_count += 1
-            score_t = -np.sum((h + r - entity_embedding[j]) ** 2)
-            if score_t > my_score:
-                t_count += 1
-    h_flag = 1.0
-    t_flag = 1.0
-    if h_count >= k:
-        h_flag = 0.0
-    h_rank = h_count+1
-    if t_count >= k:
-        t_flag = 0.0
-    t_rank = t_count+1
+    entity_size = 14951
+    # scores = [entity_size,]
+    h_scores = np.sum((entity_embedding + r -t)**2, axis=1)
+    t_scores = np.sum((h + r - entity_embedding) ** 2, axis=1)
+    my_score = np.sum((h + r - t) ** 2)
+    h_flag = 0.0
+    t_flag = 0.0
+    # get rank
+    h_sort_scores = np.sort(h_scores)
+    h_rank = np.argwhere(h_sort_scores > my_score).squeeze(axis=1).tolist()
+    h_rank = (h_rank[0] + 1) if len(h_rank) > 0 else entity_size
+    t_sort_scores = np.sort(t_scores)
+    t_rank = np.argwhere(t_sort_scores > my_score).squeeze(axis=1).tolist()
+    t_rank = (t_rank[0] + 1) if len(t_rank) > 0 else entity_size
+    if h_rank <= k:
+        h_flag = 1.0
+    if t_rank <= k:
+        t_flag = 1.0
     return (h_flag, h_rank, t_flag, t_rank)
 
 
@@ -77,3 +75,4 @@ if __name__ == '__main__':
     time_end = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(time_end)
 """
+

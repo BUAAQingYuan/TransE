@@ -34,13 +34,13 @@ def invert_dict(d):
 def load_train_test():
     entity_dic = invert_dict(corpora.Dictionary.load('entitys.dict'))
     relation_dic = invert_dict(corpora.Dictionary.load('relations.dict'))
-    # train_size = 483142
+    train_size = 483142
     test_size = 59071
-    # train_data = numpy.zeros(shape=(train_size, 3), dtype=numpy.int32)
+    train_data = numpy.zeros(shape=(train_size, 3), dtype=numpy.int32)
     test_data = numpy.zeros(shape=(test_size, 3), dtype=numpy.int32)
-    # train_f = codecs.open('data/FB15K/train.txt', 'r', encoding='utf-8')
+    train_f = codecs.open('data/FB15K/train.txt', 'r', encoding='utf-8')
     test_f = codecs.open('data/FB15K/test.txt', 'r', encoding='utf-8')
-    """
+
     count = 0
     for line in train_f.readlines():
         line = line.strip('\n').strip()
@@ -48,7 +48,7 @@ def load_train_test():
         example_id = [entity_dic[example[0]], entity_dic[example[1]], relation_dic[example[2]]]
         train_data[count] = numpy.asarray(example_id, dtype=numpy.int32)
         count += 1
-    """
+
     count = 0
     for line in test_f.readlines():
         line = line.strip('\n').strip()
@@ -56,7 +56,7 @@ def load_train_test():
         example_id = [entity_dic[example[0]], entity_dic[example[1]], relation_dic[example[2]]]
         test_data[count] = numpy.asarray(example_id, dtype=numpy.int32)
         count += 1
-    return test_data
+    return test_data, train_data
 
 
 # train_data = [batch_size,3]

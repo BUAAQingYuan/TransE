@@ -16,10 +16,10 @@ embedding_size = 50
 num_sample = 200
 # training
 Test_size = 5000
-Train_size = 54071
-# Train_size = 483142
+# Train_size = 54071
+Train_size = 483142
 BATCH_SIZE = 16
-EVAL_FREQUENCY = 1000
+EVAL_FREQUENCY = 2000
 NUM_EPOCHS = 5
 
 FLAGS = None
@@ -30,9 +30,9 @@ def train():
     # train_data = [train_size,3]
     # test_data = [test_size,3]
     print("loading data...")
-    test_data = load_data.load_train_test()
-    train_data = test_data[:Train_size, :]
-    test_data = test_data[Train_size:, :]
+    test_data, train_data = load_data.load_train_test()
+    # train_data = test_data[:Train_size, :]
+    test_data = test_data[Test_size:, :]
 
     train_data_node = tf.placeholder(tf.int32, shape=(None, 3))
     train_neg_node = tf.placeholder(tf.int32, shape=(None, 2*num_sample, 3))
